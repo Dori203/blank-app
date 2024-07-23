@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
@@ -7,8 +8,9 @@ import random
 import pickle
 
 # Constants
-EMBEDDINGS_URL = "https://drive.google.com/uc?export=download&id=11o5XVqgWqOm-XEYTueR0F13taQb9KKLw"  # Replace with your actual Google Drive file ID
-EMBEDDINGS_FILE = "embeddings.npy"
+EMBEDDINGS_FILE1 = "embeddings_1.npy"
+EMBEDDINGS_FILE2 = "embeddings_2.npy"
+DATA_FILE = "data.pkl"
 
 class PromptSearchCluster:
     def __init__(self, data, embeddings):
@@ -18,7 +20,6 @@ class PromptSearchCluster:
 
     def search(self, query, similarity_threshold=0.5):
         query_embedding = self.model.encode([query])
-        query_embedding = query_embedding.astype(np.float32)  # Ensure same dtype as embeddings
         
         similarities = cosine_similarity(query_embedding, self.embeddings)[0]
         
@@ -89,36 +90,18 @@ class PromptSearchCluster:
         
         return cluster_prompts.iloc[selected_indices].tolist()
 
-
-def download_file(url, filename):
-    response = requests.get(url, stream=True)
-    total_size = int(response.headers.get('content-length', 0))
-    block_size = 1024  # 1 KB
-
-    with open(filename, 'wb') as file, tqdm(
-        desc=filename,
-        total=total_size,
-        unit='iB',
-        unit_scale=True,
-        unit_divisor=1024,
-    ) as progress_bar:
-        for data in response.iter_content(block_size):
-            size = file.write(data)
-            progress_bar.update(size)
-
 @st.cache_resource
 def load_data():
     print("Loading data and embeddings...")
     
-    # Check if embeddings file exists, if not, download it
-    if not os.path.exists(EMBEDDINGS_FILE):
-        st.info(f"Downloading embeddings file... This may take a while.")
-        download_file(EMBEDDINGS_URL, EMBEDDINGS_FILE)
-        st.success("Embeddings file downloaded successfully!")
+    # Load the split embeddings
+    embeddings1 = np.load(EMBEDDINGS_FILE1)
+    embeddings2 = np.load(EMBEDDINGS_FILE2)
+    embeddings = np.vstack((embeddings1, embeddings2))
     
-    embeddings = np.load(EMBEDDINGS_FILE)
-    with open('data.pkl', 'rb') as f:
+    with open(DATA_FILE, 'rb') as f:
         data = pickle.load(f)
+    
     search_cluster = PromptSearchCluster(data, embeddings)
     print("Data and embeddings loaded successfully.")
     return search_cluster
