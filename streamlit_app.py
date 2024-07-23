@@ -7,7 +7,7 @@ import random
 import pickle
 
 # Constants
-EMBEDDINGS_URL = "https://drive.google.com/uc?export=download&id=1-IqXGQbLEjKk_ycs7oI5IpOAzhAib74R"  # Replace with your actual Google Drive file ID
+EMBEDDINGS_URL = "https://drive.google.com/uc?export=download&id=11o5XVqgWqOm-XEYTueR0F13taQb9KKLw"  # Replace with your actual Google Drive file ID
 EMBEDDINGS_FILE = "embeddings.npy"
 
 class PromptSearchCluster:
